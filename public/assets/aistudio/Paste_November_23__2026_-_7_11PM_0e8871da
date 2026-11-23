@@ -1,0 +1,1032 @@
+# PROJECT SURAKSHA
+## Build a complete, integration-ready Family Scam-Call Protection System
+
+Act as a senior software architect, AWS solutions architect, cybersecurity engineer, AI engineer, MCP developer, and professional full-stack developer.
+
+Your task is to BUILD a complete, functional, hackathon-ready application called **SURAKSHA**.
+
+This project is being developed for wHACKiest 2026, under the **Make MCP Matter** track.
+
+Do not just create a UI, prototype, or architecture document. Build the actual application, backend, detection engine, approval mechanism, MCP tools, security layer, and demonstration workflow.
+
+---
+
+# 1. UNDERSTAND THE PRODUCT BEFORE CODING
+
+SURAKSHA is a live-call guardian that detects scam tactics, interrupts the victim using a pre-consented family voice, and brings the family into the situation only after the parent explicitly approves by saying "haan".
+
+### The problem
+
+Scammers isolate victims during live phone calls.
+
+They impersonate:
+- CBI and police officers.
+- Customs and government officials.
+- Bank employees.
+- TRAI representatives.
+- Other trusted authorities.
+
+They use:
+- Fake arrest warrants.
+- FIR threats.
+- Digital arrest threats.
+- Fake KYC verification.
+- Urgent payment demands.
+- OTP and PIN requests.
+- Instructions to stay on video calls.
+- Threats that force victims to remain isolated from family.
+
+Existing link checkers cannot intervene in live calls. Voice agents risk confusing the scammer with the actual user. Reporting platforms such as Chakshu and cybercrime.gov.in are not substitutes for an immediate live-call intervention workflow.
+
+### Our solution
+
+SURAKSHA breaks the isolation created by scammers.
+
+It:
+1. Monitors an authorized live audio input.
+2. Transcribes the conversation.
+3. Detects scam signals instantly.
+4. Plays a calm, pre-consented family-voice interruption.
+5. Asks the parent whether they want their trusted family member involved.
+6. Waits for explicit approval.
+7. Alerts the family through a secured and policy-controlled workflow.
+8. Preserves evidence for manual reporting.
+
+**The system must never converse with the suspected scammer.**
+
+This is an absolute architectural requirement.
+
+---
+
+# 2. CRITICAL DEVELOPMENT CONSTRAINT: NO API KEYS CURRENTLY AVAILABLE
+
+We currently do not possess API credentials for ElevenLabs or AWS services.
+
+The organizers may provide access or credentials during the offline hackathon.
+
+Therefore, build the entire application now with two independently configurable modes:
+
+### DEMO MODE
+
+The application must operate completely without external API keys.
+
+Use:
+- Real deterministic scam-detection logic.
+- Simulated streaming transcripts.
+- Locally stored sample voice clips.
+- Context-aware mock Bedrock responses.
+- Real cryptographic approval-token generation and validation.
+- Actual locally implemented MCP-compatible tools.
+- Local authorization and Cedar-policy simulation.
+- Persistent local audit storage.
+- Simulated notification delivery.
+- Actual evidence-pack generation.
+- A working dashboard.
+
+### LIVE MODE
+
+Prepare replaceable service adapters for:
+- ElevenLabs Scribe v2.
+- ElevenLabs TTS.
+- Amazon Bedrock.
+- AWS Lambda.
+- Amazon Cognito.
+- AWS AgentCore Gateway.
+- Cedar authorization.
+- Amazon SNS.
+- DynamoDB.
+- S3 Object Lock.
+
+When credentials become available, individual integrations must be switchable from MOCK to LIVE without rewriting application business logic.
+
+**Never claim a mocked integration is a real API execution.**
+
+Each integration must visibly indicate whether it is:
+- MOCK
+- LIVE
+- PENDING CONFIGURATION
+- CONNECTION FAILED
+
+Do not halt development because credentials are unavailable.
+
+---
+
+# 3. EXACT SYSTEM ARCHITECTURE
+
+Preserve the architecture from the supplied SURAKSHA architecture diagram.
+
+## A. External Audio and Voice Layer
+
+### ElevenLabs Scribe v2 – Real-time STT
+
+Responsibilities:
+- Receive authorized call audio.
+- Stream audio through WebSocket.
+- Produce partial transcripts.
+- Support Hindi and Hinglish conversations.
+- Include timestamps.
+- Forward transcript windows to the Rule Engine.
+
+Implement an interface:
+
+SpeechToTextProvider
+
+Implement:
+- MockSpeechToTextProvider
+- ElevenLabsScribeProvider
+
+In DEMO MODE:
+Simulate a real-time conversation using progressively arriving transcript segments, not a single block of text appearing instantly.
+
+Include predefined scam scenarios and microphone input where available.
+
+In LIVE MODE:
+Use the actual Scribe v2 integration.
+
+### ElevenLabs TTS – Consented Family Voice
+
+Responsibilities:
+- Maintain approved family voice clips.
+- Trigger the appropriate pre-generated voice recording.
+- Play the interruption through the parent's device.
+
+The exact interruption prompt should be:
+
+"Kya main Ansh ko abhi bula loon?"
+
+Use pre-generated family voice clips.
+
+Family voice creation or configuration must require explicit consent and authorization.
+
+Implement:
+
+TextToSpeechProvider
+
+Include:
+- MockTTSProvider
+- ElevenLabsTTSProvider
+
+In DEMO MODE:
+Use locally stored sample clips or a clearly labelled browser speech fallback.
+
+In LIVE MODE:
+Use configured ElevenLabs voice IDs and credentials.
+
+IMPORTANT:
+The interruption must be quick and independent of the LLM response.
+
+### Echo Prevention
+
+When a family voice interruption plays:
+- Temporarily suppress or mute transcript processing of the system's own playback where technically possible.
+- Prevent playback audio from being mistaken for scammer speech.
+- Resume transcript monitoring after the interruption.
+
+---
+
+## B. Detection Layer – AWS Cloud
+
+### Deterministic Rule Engine
+
+This is the most important live-call component.
+
+Build a real detection engine, independent of Bedrock and API keys.
+
+Its job is to identify scam tactics using rolling transcript windows of approximately 10–20 seconds.
+
+Detect these categories:
+
+1. ISOLATION
+   - Asking the victim not to tell their family.
+   - Asking the victim to stay on a private video call.
+   - Preventing the victim from contacting others.
+
+2. FAKE AUTHORITY
+   - Impersonating CBI, police, customs, TRAI or banks.
+   - Claiming to have official government authority.
+
+3. THREATS
+   - Fake arrest warrants.
+   - FIR threats.
+   - Digital arrest threats.
+   - Claims of imminent legal action.
+
+4. URGENCY
+   - Artificial deadlines.
+   - Threats that accounts will be blocked.
+   - Pressure to act immediately.
+
+5. MONEY AND CREDENTIAL REQUESTS
+   - OTP requests.
+   - PIN requests.
+   - UPI requests.
+   - Bank-transfer instructions.
+   - Demands for money.
+
+6. REMOTE ACCESS
+   - Instructions to install remote-control applications.
+   - Requests to share screens.
+   - Requests to grant device permissions.
+
+Detection requirements:
+- Deterministic scoring.
+- Explainable matched rules.
+- Configurable weights.
+- Multiple simultaneous scam signals.
+- Rolling-window evaluation.
+- Configurable high-risk threshold.
+- Alert deduplication.
+- Rule version tracking.
+- Low-latency execution.
+
+Provide an explainable risk score and risk category.
+
+A single keyword must not automatically label every conversation a scam. Consider context and combinations of signals.
+
+Create sample rule tests using Hindi, English and Hinglish.
+
+The Rule Engine must trigger alerts without waiting for Bedrock.
+
+### Amazon Bedrock
+
+Use Bedrock ONLY for:
+- Explaining why the conversation was flagged.
+- Explaining the risk to the family.
+- Generating a natural Hindi/Hinglish explanation.
+- Preparing a concise contextual response script.
+- Helping the family understand the detected scam tactics.
+
+Implement:
+
+LLMProvider
+
+Include:
+- MockLLMProvider
+- AmazonBedrockProvider
+
+The LLM must never decide whether authorization is granted.
+
+The LLM must never:
+- Approve family operations.
+- Override Cedar policies.
+- Authorize MCP calls.
+- Control the interruption trigger.
+- Converse with the suspected scammer.
+
+The Rule Engine must continue operating when Bedrock is unavailable.
+
+---
+
+# 4. ORCHESTRATION LAYER
+
+### Orchestrator – AWS Lambda
+
+Implement the orchestration logic using a modular service architecture.
+
+Responsibilities:
+
+1. Receive transcript updates.
+2. Evaluate the Rule Engine.
+3. Generate a unique alert ID.
+4. Trigger immediate high-risk alerts.
+5. Obtain an explanation from Bedrock independently.
+6. Trigger the pre-generated family voice interruption.
+7. Wait for parental approval.
+8. Send signed authorization tokens through AgentCore Gateway.
+9. Call the permitted MCP tools.
+10. Update notifications, evidence and dashboard events.
+
+The local implementation must use the same business logic.
+
+LIVE MODE must be ready for AWS Lambda deployment.
+
+Maintain a clear event lifecycle:
+
+DETECTED → INTERRUPTION PLAYED → APPROVAL PENDING → APPROVED / REJECTED → AUTHORIZATION CHECK → TOOL EXECUTION → FAMILY ALERTED → EVIDENCE READY.
+
+Keep denied and failed states separate.
+
+---
+
+# 5. APPROVAL SERVICE – CORE SECURITY COMPONENT
+
+The approval mechanism is a defining feature of SURAKSHA.
+
+After the interruption asks:
+
+"Kya main Ansh ko abhi bula loon?"
+
+The system must wait for the parent's explicit response.
+
+When the parent says "haan":
+
+1. Capture the affirmative approval.
+2. Verify that an active alert exists.
+3. Associate the approval with the exact alert ID.
+4. Generate a cryptographically signed token.
+5. Restrict the token to explicitly permitted family operations.
+6. Set a short configurable expiry.
+7. Make the token single-use.
+8. Return the token to Orchestrator Lambda.
+
+The token must contain or securely reference:
+
+- token_id
+- alert_id
+- approver_id
+- permitted_actions
+- issued_at
+- expires_at
+- nonce
+- signature
+- usage status
+
+Implement proper cryptographic signing, not a hardcoded approval string.
+
+The validation process must reject:
+- Missing tokens.
+- Invalid signatures.
+- Expired tokens.
+- Reused tokens.
+- Alert ID mismatches.
+- Unauthorized action scopes.
+- Tampered tokens.
+
+In DEMO MODE, use actual cryptographic verification with locally managed development keys.
+
+In LIVE MODE, use securely configured signing keys and appropriate secret-management infrastructure.
+
+Provide an explicit approval UI for the demo, alongside optional speech recognition for "haan".
+
+Do not allow an ambiguous or unrelated utterance to trigger family approval.
+
+---
+
+# 6. POLICY ENFORCEMENT LAYER
+
+Preserve all four components.
+
+### A. AgentCore Gateway
+
+- All MCP operations must pass through the Gateway abstraction.
+- Prepare Cognito OAuth authorization.
+- Keep MCP servers behind the Gateway.
+- Do not expose privileged MCP tools directly to the frontend.
+
+### B. Lambda Interceptor
+
+Validate:
+- Token signature.
+- Expiration.
+- Alert ID matching.
+- One-time use.
+- Requested tool/action scope.
+
+Reject all invalid requests.
+
+### C. Cedar Policy
+
+Create actual Cedar policy files.
+
+Implement:
+- Default-deny.
+- Forbid-wins semantics.
+- Explicitly permitted Tier 2 family operations.
+- Rejection of unauthorized requests.
+- Policy enforcement outside the LLM.
+
+In DEMO MODE:
+Use an independent local authorization adapter that follows the same permission rules.
+
+In LIVE MODE:
+Prepare the actual AWS policy integration and Gateway configuration.
+
+### D. Blocked State
+
+When a request fails authorization:
+- Do not call Family MCP.
+- Show an explicit DENIED state.
+- Record the denial in the audit trail.
+- Preserve the associated alert information.
+
+The demo must show a successful approved request and a blocked unauthorized request.
+
+---
+
+# 7. MCP SERVER LAYER – TRACK MAKE MCP MATTER
+
+This section is essential.
+
+Do not implement MCP merely as a decorative label or a collection of normal REST endpoints.
+
+Implement four logically separate MCP server groups with proper tool definitions, input schemas, validation, and execution boundaries.
+
+All MCP servers must be routed behind the Gateway in the live architecture.
+
+### MCP SERVER 1: LISTEN MCP – TIER 1
+
+Tool:
+
+get_transcript_window
+
+Purpose:
+- Retrieve the relevant transcript window.
+- Return timestamps.
+- Return transcript excerpts associated with a particular alert.
+
+No parental approval token required.
+
+### MCP SERVER 2: SCAM-INTEL MCP – TIER 1
+
+Tools:
+
+match_scam_playbook
+score_signals
+check_url
+prepare_evidence_pack
+
+Responsibilities:
+- Match scam patterns.
+- Score suspicious signals.
+- Check suspicious URLs.
+- Prepare structured evidence.
+
+DEMO MODE:
+Use local scam-playbook and sample URL intelligence datasets.
+
+LIVE MODE:
+Make threat-intelligence providers configurable.
+
+Never open or click suspicious URLs.
+
+### MCP SERVER 3: FAMILY MCP – TIER 2
+
+Tools:
+
+alert_guardians
+send_family_voice_message
+
+Responsibilities:
+- Notify registered family guardians.
+- Send approved family voice messages.
+- Provide relevant incident details.
+
+MANDATORY:
+A valid signed, unexpired, single-use approval token must authorize the required family action.
+
+Do not allow direct access to these tools without the Gateway authorization flow.
+
+### MCP SERVER 4: AUDIT MCP
+
+Tool:
+
+append_event
+
+Responsibilities:
+- Record detection events.
+- Record interruption events.
+- Record approval events.
+- Record authorization decisions.
+- Record tool executions.
+- Record denied requests.
+- Record notification events.
+- Record evidence generation.
+
+Implement append-only behavior.
+
+Do not expose edit or delete operations for historical audit records.
+
+Audit access must be separated from normal family operations.
+
+---
+
+# 8. NOTIFICATION AND DATA LAYER
+
+### Amazon SNS
+
+Prepare SNS integration for guardian notifications.
+
+DEMO MODE:
+- Simulate delivery.
+- Show notification content.
+- Update delivery status.
+
+LIVE MODE:
+- Use actual configured SNS resources.
+
+### Hash-chained Audit Log
+
+Use:
+- DynamoDB.
+- Amazon S3 Object Lock.
+
+DEMO MODE:
+- Use a persistent local database.
+- Implement SHA-256 hash chaining.
+- Include previous_event_hash.
+- Include event_hash.
+- Verify the integrity of the entire sequence.
+- Detect historical modifications.
+
+LIVE MODE:
+Implement adapters for DynamoDB and S3 Object Lock.
+
+### Evidence Pack
+
+Generate a genuinely downloadable evidence package.
+
+Include:
+- Alert ID.
+- Call/session timestamps.
+- Relevant transcript excerpts.
+- Matched scam indicators.
+- Scam playbook.
+- Rule Engine verdict.
+- Risk explanation.
+- URL check results, if available.
+- Timestamped event timeline.
+- Integrity hash.
+
+Provide a readable PDF or structured downloadable report.
+
+Do not fabricate missing information.
+
+### Manual Reporting Only
+
+Provide instructions to submit evidence manually through:
+
+- Chakshu.
+- 1930.
+- cybercrime.gov.in.
+
+There is no documented public Chakshu API in our submitted solution.
+
+Never implement automatic report submission.
+
+Display:
+
+"EVIDENCE READY – MANUAL FAMILY SUBMISSION REQUIRED"
+
+---
+
+# 9. ADDITIONAL PRODUCT CAPABILITY: SCAM DRILL
+
+The submitted proposal includes Scam Drill as an additional capability.
+
+Implement a separate Scam Drill module.
+
+This module helps family members learn to recognize scam tactics.
+
+Features:
+- Simulated scam-call scenarios.
+- Role-play exercises.
+- Practice identifying fake authority.
+- Practice identifying isolation tactics.
+- Practice responding to threats and urgent payment demands.
+- Practice ending suspicious calls.
+- Provide a performance summary.
+- Provide suggestions for improvement.
+
+The ElevenLabs Conversational Agent may be integrated here for turn-taking practice.
+
+CRITICAL ARCHITECTURAL SEPARATION:
+
+The conversational agent must NEVER be connected to the live-call path.
+
+It is allowed only in the independent Scam Drill module and associated practice workflows.
+
+### Secondary Message and Link Check
+
+Build a separate tool allowing users to:
+- Paste a suspicious URL.
+- Paste a suspicious SMS or WhatsApp message.
+- Analyse suspicious wording.
+- Check URL reputation using the configured provider or mock dataset.
+- Explain detected risks.
+
+Never automatically click or open submitted links.
+
+---
+
+# 10. FRONTEND – REACT GUARDIAN DASHBOARD
+
+Create a polished, premium, professional interface.
+
+The UI must look like a credible cybersecurity product, not a generic AI-generated admin template.
+
+Use React and TypeScript if starting from scratch. Preserve an existing working framework if the repository already uses one.
+
+Use a consistent design system and responsive layout.
+
+### PAGE 1: HOME / PROTECTION DASHBOARD
+
+Show:
+- SURAKSHA branding.
+- Overall protection status.
+- Parent device connection status.
+- Active monitoring status.
+- Total alerts.
+- High-risk incidents.
+- Guardian connection status.
+- Recent activity.
+
+Include a clear primary action:
+
+"Start Live Guard"
+
+### PAGE 2: LIVE GUARD
+
+This is the hero feature.
+
+Show:
+- Simulated incoming caller.
+- Current monitoring status.
+- Progressive transcript.
+- Rolling transcript windows.
+- Detected risk categories.
+- Risk score.
+- Risk explanation.
+- Alert timeline.
+
+When a high-risk scam is detected:
+
+1. Display an immediate visual alert.
+2. Show the matched scam indicators.
+3. Trigger the consented family voice clip.
+4. Display the exact prompt.
+5. Wait for "haan".
+6. Show token generation and validation.
+7. Show Gateway authorization.
+8. Show family notification status.
+
+Display the complete process in real time.
+
+The user must be able to launch different predefined scam scenarios.
+
+### PAGE 3: GUARDIAN DASHBOARD
+
+Display:
+- Active incidents.
+- Risk classification.
+- Transcript excerpts.
+- Detected scam indicators.
+- Approval status.
+- Guardian notifications.
+- Evidence pack status.
+- Audit events.
+
+### PAGE 4: ARCHITECTURE MONITOR
+
+Create a visual representation of the complete architecture.
+
+Include:
+
+ElevenLabs Scribe v2
+ElevenLabs TTS
+Rule Engine
+Amazon Bedrock
+Orchestrator Lambda
+Approval Service
+AgentCore Gateway
+Cognito OAuth
+Lambda Interceptor
+Cedar Policy
+Listen MCP
+Scam-Intel MCP
+Family MCP
+Audit MCP
+Amazon SNS
+DynamoDB
+S3 Object Lock
+Evidence Pack
+Guardian Dashboard
+
+Visually differentiate:
+- Detection: Amber.
+- Orchestration and Approval: Blue.
+- Policy enforcement: Red.
+- MCP servers: Green.
+- External services: Grey.
+- Human handoff: Dashed Orange.
+- AWS outputs: Neutral.
+
+Display active execution flow and connection status.
+
+### PAGE 5: EVIDENCE CENTER
+
+Show:
+- Downloadable evidence.
+- Incident timeline.
+- Transcript excerpts.
+- Risk verdict.
+- Integrity verification.
+- Manual reporting instructions.
+
+### PAGE 6: SCAM DRILL
+
+Create a separate interactive training experience.
+
+Do not mix the conversational drill agent into Live Guard.
+
+### PAGE 7: INTEGRATION STATUS
+
+Display the status of each integration individually.
+
+For example:
+
+ElevenLabs Scribe: MOCK
+ElevenLabs TTS: MOCK
+Amazon Bedrock: MOCK
+AWS Cognito: PENDING
+AgentCore Gateway: PENDING
+SNS: MOCK
+DynamoDB: LOCAL
+S3 Object Lock: PENDING
+
+These are illustrative initial states, not permanent hardcoded statuses.
+
+The dashboard must calculate actual configuration and health status.
+
+---
+
+# 11. API ABSTRACTION AND CONFIGURATION
+
+Implement clean provider interfaces.
+
+At a minimum:
+
+SpeechToTextProvider
+TextToSpeechProvider
+LLMProvider
+NotificationProvider
+GatewayProvider
+AuditStorageProvider
+ThreatIntelligenceProvider
+
+Create:
+- Mock provider implementations.
+- Actual provider integration implementations.
+- Independent service configuration.
+- Integration health checks.
+
+Provide an .env.example file containing placeholders only.
+
+Include configuration for:
+
+ELEVENLABS_API_KEY=
+ELEVENLABS_VOICE_ID=
+AWS_REGION=
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_SESSION_TOKEN=
+BEDROCK_MODEL_ID=
+COGNITO_USER_POOL_ID=
+COGNITO_CLIENT_ID=
+AGENTCORE_GATEWAY_URL=
+SNS_TOPIC_ARN=
+DYNAMODB_TABLE_NAME=
+S3_AUDIT_BUCKET=
+
+Do not assume credentials will always consist of static access keys. Support appropriate AWS identity-based authentication and temporary credentials where required.
+
+Use server-side secrets only.
+
+Never expose API keys in frontend code.
+
+Allow each service to be configured independently as MOCK or LIVE.
+
+A missing Bedrock key must not prevent Scribe or TTS from being enabled.
+
+A missing SNS configuration must not disable the Rule Engine.
+
+When external credentials are received, developers should only need to configure the required environment variables, resource IDs, IAM permissions, and infrastructure, then run the health checks.
+
+Do not claim that infrastructure is deployed simply because an adapter or configuration file exists.
+
+Use current official AWS and ElevenLabs documentation to verify SDK versions, authentication methods, endpoint requirements and deployment configuration.
+
+---
+
+# 12. SAFETY REQUIREMENTS – NON-NEGOTIABLE
+
+SURAKSHA must NEVER:
+
+1. Reply to the suspected scammer.
+2. Conduct a conversational AI interaction with the scammer.
+3. Click untrusted links.
+4. Execute UPI transactions.
+5. Open or operate banking applications.
+6. Enter or disclose OTPs or PINs.
+7. Install remote-access applications.
+8. Automatically submit police or cybercrime reports.
+9. Claim that a payment or transaction is safe.
+10. Perform family-level actions without appropriate parental approval.
+11. Allow the LLM to override security policies.
+12. Allow a reused approval token.
+
+Family voice must be pre-consented.
+
+Keep all family actions limited to explicitly authorized capabilities.
+
+---
+
+# 13. TESTING REQUIREMENTS
+
+Implement actual automated tests.
+
+### Detection tests
+
+- Normal conversation.
+- Fake bank OTP request.
+- Fake police impersonation.
+- Digital arrest threat.
+- Urgent financial demand.
+- Isolation instruction.
+- Remote-access application request.
+- Multiple simultaneous risk signals.
+- Hindi and Hinglish samples.
+
+### Approval tests
+
+- Valid "haan".
+- Missing approval.
+- Expired token.
+- Invalid signature.
+- Wrong alert ID.
+- Reused token.
+- Tampered token.
+- Unauthorized tool scope.
+
+### Policy tests
+
+- Tier 1 tool succeeds without family approval.
+- Tier 2 tool fails without approval.
+- Tier 2 tool succeeds with valid approval.
+- Default-deny behavior.
+- Forbid-wins behavior.
+- Invalid token never invokes Family MCP.
+
+### Audit tests
+
+- Append-only event recording.
+- Previous hash validation.
+- Event hash validation.
+- Tampering detection.
+- Denial event recording.
+
+### Integration tests
+
+- All mocks work without credentials.
+- Missing credentials do not crash the application.
+- Failed integrations show a visible degraded state.
+- Mock and live service statuses are correctly distinguished.
+- Service adapters can be switched independently.
+
+### Full end-to-end test
+
+Demonstrate an entire scam call from transcription to evidence generation.
+
+---
+
+# 14. 24-HOUR HACKATHON EXECUTION PRIORITY
+
+Do not attempt to implement every optional feature before completing the core product.
+
+Follow these milestones.
+
+### PHASE 1 – CORE DEMO
+
+- React application.
+- Parent device simulator.
+- Streaming transcript.
+- Deterministic Rule Engine.
+- High-risk alert.
+- Family voice interruption.
+
+### PHASE 2 – SECURITY
+
+- Approval Service.
+- Signed single-alert token.
+- One-time-use validation.
+- Gateway abstraction.
+- Lambda Interceptor.
+- Cedar policy.
+- Blocked unauthorized action.
+
+### PHASE 3 – MCP MATTER
+
+- Listen MCP.
+- Scam-Intel MCP.
+- Family MCP.
+- Audit MCP.
+- Real tool definitions and schemas.
+- Tool-call execution and security checks.
+
+### PHASE 4 – GUARDIAN AND EVIDENCE
+
+- Guardian Dashboard.
+- SNS mock integration.
+- Persistent audit.
+- Hash-chain verification.
+- Evidence pack generation.
+- Manual reporting handoff.
+
+### PHASE 5 – LIVE API READINESS
+
+- Scribe adapter.
+- ElevenLabs TTS adapter.
+- Bedrock adapter.
+- AWS Gateway preparation.
+- SNS adapter.
+- DynamoDB/S3 integration preparation.
+
+### PHASE 6 – OPTIONAL FEATURES
+
+- Scam Drill.
+- Conversational Agent integration for Scam Drill only.
+- Secondary message and URL check.
+
+Use the H10 architecture-completeness gate and H18 feature-freeze gate. At H18, prioritize stabilizing the core demo rather than adding features.
+
+---
+
+# 15. FINAL ACCEPTANCE CRITERIA
+
+The application is complete only when all of the following work:
+
+1. The application starts without API keys.
+2. A user can launch a simulated scam call.
+3. Transcription appears progressively.
+4. Rules identify suspicious activity in rolling windows.
+5. A high-risk alert appears without waiting for Bedrock.
+6. Bedrock mock provides a contextual explanation and Hindi script.
+7. The pre-generated family voice interruption plays.
+8. The exact prompt "Kya main Ansh ko abhi bula loon?" is displayed and played.
+9. The parent explicitly approves.
+10. Approval Service generates a signed token linked to the alert.
+11. Gateway authorization checks the token.
+12. An unauthorized action is blocked.
+13. Authorized MCP tools execute.
+14. Guardian notification appears.
+15. Dashboard updates.
+16. Evidence pack is downloadable.
+17. Audit log is hash-chained and verifies correctly.
+18. Manual reporting instructions appear.
+19. Scam Drill operates independently.
+20. No AI agent talks to the suspected scammer.
+
+At least one successful family notification and one blocked unauthorized action must be demonstrated.
+
+---
+
+# 16. HOW YOU SHOULD WORK ON THIS REPOSITORY
+
+Before changing code:
+
+1. Inspect the complete existing repository.
+2. Identify its framework and architecture.
+3. Examine existing components and functionality.
+4. Identify what already works.
+5. Create a concise implementation plan.
+6. Preserve useful existing code.
+7. Avoid unnecessary rewrites.
+
+Then implement the product, not just the plan.
+
+Build incrementally and run tests after each major phase.
+
+Do not leave:
+- Empty components.
+- Fake buttons.
+- Placeholder API functions presented as working integrations.
+- Hardcoded success messages.
+- Non-functional dashboard controls.
+- Incomplete security checks.
+
+Use realistic sample data, persistent local storage and meaningful error handling.
+
+Keep code modular, documented and deployable.
+
+At completion, provide:
+- Complete working application.
+- README.
+- Local setup instructions.
+- DEMO MODE instructions.
+- LIVE MODE configuration instructions.
+- .env.example.
+- Test results.
+- Architecture documentation.
+- AWS deployment prerequisites.
+- A step-by-step hackathon demonstration script.
+
+**FINAL DIRECTIVE**
+
+Build SURAKSHA according to the architecture and product specifications above.
+
+The primary goal is a genuinely working live-call protection demonstration with deterministic detection, family-voice interruption, explicit human approval, policy-enforced MCP execution, guardian notification and tamper-evident evidence.
+
+The system must work today without API keys and be ready to connect to actual ElevenLabs and AWS services when credentials become available.
+
+Architecture fidelity, security, reliable execution and demonstration quality take priority over unnecessary features or decorative UI.
+
+Do not simplify away the security architecture just to make the frontend appear functional.

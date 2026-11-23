@@ -1,0 +1,6 @@
+{
+  "name": "SURAKSHA — Family Scam-Call Protection System",
+  "description": "Live-call guardian that detects scam tactics deterministically, interrupts with a consented family voice, enforces explicit human approval via signed tokens, Cedar policies, and MCP servers behind AgentCore Gateway, and preserves tamper-evident evidence.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
