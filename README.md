@@ -13,7 +13,7 @@ Built for **wHACKiest 2026** · Track: **Make MCP Matter**
 [![Policy](https://img.shields.io/badge/Cedar_Policy-Default--Deny_%2F_Forbid--Wins-dc2626?style=flat-square)](policies/suraksha.cedar)
 [![License](https://img.shields.io/badge/License-Apache_2.0-475569?style=flat-square)](LICENSE)
 
-[Overview](#-overview) · [Why MCP Matters](#-why-make-mcp-matter) · [Screenshots](#-screenshots) · [Architecture](#-system-architecture) · [Quick Start](#-quick-start-demo-mode--zero-api-keys-required) · [Live Mode Setup](#-switching-to-live-mode-when-hackathon-api-keys-are-provided) · [3-Min Judge Demo](#-3-minute-hackathon-demo-script)
+[Overview](#-overview) · [Why MCP Matters](#-why-make-mcp-matter) · [Screenshots](#-screenshots) · [Architecture](#-system-architecture) · [Quick Start](#-quick-start-demo-mode--zero-api-keys-required) · [Live Mode Setup](#-switching-to-live-mode-when-hackathon-api-keys-are-provided)
 
 </div>
 
@@ -266,15 +266,3 @@ See [`infra/aws-deployment-architecture.md`](infra/aws-deployment-architecture.m
 ├── LICENSE                            # Apache-2.0 License
 └── server.ts                          # Express + Vite full-stack server (port 3000)
 ```
-
----
-
-## 🎬 3-Minute Hackathon Demo Script
-
-1. **Protection Home**: Highlight linked guardian (`Ansh`), Rule Engine status, and verified hash chain. Click **Start Live Guard**.
-2. **Progressive Scam Call**: Select *"CBI Digital Arrest & Isolation Scam (Hinglish)"* and click **Start Call Simulation**.
-3. **Instant Detection & Voice Interruption**: Point out that the Rule Engine triggers (`92/100` on initial trigger, escalating to `100/100`) immediately without waiting for Bedrock, enables **Echo Suppression**, and plays `"Kya main Ansh ko abhi bula loon?"`.
-4. **Prove Policy Enforcement (`DENIED`)**: Before approving, click **Block Missing Token** or **Block LLM Override** to show Lambda Interceptor + Cedar Policy rejecting the call and recording `AUTHZ_DENY` while Family MCP remains untouched.
-5. **Prove Ambiguous Speech Rejection**: Submit `"theek hai dekhte hain"` to demonstrate that non-affirmative speech cannot trigger family escalation.
-6. **Explicit `"Haan"` Approval (`ALLOWED`)**: Click **Say "Haan" (Approve Family Alert)**—showing the single-use HMAC token minted, Cedar `PERMIT`, SNS delivery to Ansh, and Evidence Pack generation. Click **Block Token Replay** to prove the consumed token cannot be reused.
-7. **Evidence Center & Scam Drill**: Show the verified SHA-256 audit chain, download the Evidence Pack (`EVIDENCE READY – MANUAL FAMILY SUBMISSION REQUIRED`), and close on **Scam Drill** + **Integration Status**.
