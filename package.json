@@ -1,7 +1,19 @@
 {
-  "name": "react-example",
+  "name": "suraksha-mcp-guardian",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Family scam-call protection system with deterministic 18s rolling-window detection, consented family voice interruption, explicit 'haan' HMAC-SHA256 approval tokens, and Cedar-enforced MCP servers behind AgentCore Gateway.",
+  "license": "Apache-2.0",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "cedar-policy",
+    "aws-bedrock-agentcore",
+    "scam-detection",
+    "whackiest-2026",
+    "elevenlabs",
+    "security"
+  ],
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
