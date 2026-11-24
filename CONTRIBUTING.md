@@ -25,6 +25,6 @@ Before committing changes, verify all checks pass:
 
 ```bash
 npm run lint    # Strict TypeScript check
-npm test        # 15 deterministic unit, Cedar, MCP, audit & E2E tests
+npm test        # 17 deterministic unit, Cedar, MCP, audit, serverless & E2E tests
 npm run build   # Vite production build
 ```

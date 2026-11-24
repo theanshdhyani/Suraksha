@@ -33,11 +33,22 @@ async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
     headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) },
     ...init,
   });
-  const data = await resp.json();
-  if (!resp.ok && resp.status !== 403) {
-    throw new Error(data?.error || `Request failed (${resp.status})`);
+  const rawText = await resp.text();
+  let data: Record<string, unknown> | null = null;
+  if (rawText) {
+    try {
+      data = JSON.parse(rawText) as Record<string, unknown>;
+    } catch {
+      throw new Error(
+        `Backend API returned non-JSON response (${resp.status}) for ${url}. Ensure Express or Netlify Functions are deployed.`
+      );
+    }
   }
-  return data as T;
+  if (!resp.ok && resp.status !== 403) {
+    const errMsg = typeof data?.error === 'string' ? data.error : `Request failed (${resp.status})`;
+    throw new Error(errMsg);
+  }
+  return (data ?? {}) as T;
 }
 
 export const api = {

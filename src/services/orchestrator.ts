@@ -40,10 +40,15 @@ export class SurakshaOrchestrator {
   private readonly issuedTokens = new Map<string, ApprovalToken>();
 
   constructor(options: OrchestratorOptions = {}) {
+    const isServerless = Boolean(
+      process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.VERCEL
+    );
+    const defaultPersistPath = isServerless
+      ? path.join('/tmp', 'suraksha-data', 'audit-log.json')
+      : path.resolve(process.cwd(), 'data/audit-log.json');
+
     const persistPath =
-      options.auditPersistPath === undefined
-        ? path.resolve(process.cwd(), 'data/audit-log.json')
-        : options.auditPersistPath;
+      options.auditPersistPath === undefined ? defaultPersistPath : options.auditPersistPath;
 
     this.auditLog = new HashChainedAuditLog(persistPath);
 

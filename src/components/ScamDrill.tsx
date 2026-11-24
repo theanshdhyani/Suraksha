@@ -23,12 +23,15 @@ export function ScamDrill() {
   const [checking, setChecking] = useState(false);
 
   useEffect(() => {
-    void api.getDrillScenarios().then((res) => {
-      setScenarios(res.scenarios);
-      if (res.scenarios.length > 0) {
-        setSelectedId(res.scenarios[0].id);
-      }
-    });
+    void api
+      .getDrillScenarios()
+      .then((res) => {
+        setScenarios(res.scenarios);
+        if (res.scenarios.length > 0) {
+          setSelectedId(res.scenarios[0].id);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const currentScenario = scenarios.find((s) => s.id === selectedId) || scenarios[0] || null;

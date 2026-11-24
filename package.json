@@ -3,6 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "description": "Family scam-call protection system with deterministic 18s rolling-window detection, consented family voice interruption, explicit 'haan' HMAC-SHA256 approval tokens, and Cedar-enforced MCP servers behind AgentCore Gateway.",
+  "homepage": "https://surakshademo.netlify.app/",
   "license": "Apache-2.0",
   "keywords": [
     "mcp",
@@ -41,6 +42,7 @@
     "motion": "^12.23.24",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
+    "serverless-http": "^4.0.0",
     "tsx": "^4.21.0",
     "vite": "^8.3.0",
     "ws": "^8.23.0",

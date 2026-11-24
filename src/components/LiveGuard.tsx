@@ -50,12 +50,17 @@ export function LiveGuard({ onDataUpdated, onNavigate }: LiveGuardProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    void api.getScenarios().then((data) => {
-      setScenarios(data.scenarios);
-      if (data.scenarios.length > 0) {
-        setSelectedScenarioId(data.scenarios[0].id);
-      }
-    });
+    void api
+      .getScenarios()
+      .then((data) => {
+        setScenarios(data.scenarios);
+        if (data.scenarios.length > 0) {
+          setSelectedScenarioId(data.scenarios[0].id);
+        }
+      })
+      .catch((err) => {
+        setErrorMessage(err instanceof Error ? err.message : 'Failed to load call scenarios.');
+      });
     return () => {
       timerRefs.current.forEach((id) => window.clearTimeout(id));
     };

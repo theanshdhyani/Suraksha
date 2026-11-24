@@ -208,11 +208,13 @@ export function ArchitectureMonitor() {
   const [activeLayer, setActiveLayer] = useState<NodeGroup | 'ALL'>('ALL');
 
   useEffect(() => {
-    void Promise.all([api.getGatewayTools(), api.getIntegrations()]).then(([g, i]) => {
-      setTools(g.tools);
-      setCedarPolicy(g.cedar_policy);
-      setIntegrations(i.integrations);
-    });
+    void Promise.all([api.getGatewayTools(), api.getIntegrations()])
+      .then(([g, i]) => {
+        setTools(g.tools);
+        setCedarPolicy(g.cedar_policy);
+        setIntegrations(i.integrations);
+      })
+      .catch(() => {});
   }, []);
 
   const statusFor = (integrationId?: string) => {

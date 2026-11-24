@@ -38,12 +38,16 @@ export default function App() {
   const [activePage, setActivePage] = useState<NavPage>('home');
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [apiError, setApiError] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const refreshDashboard = useCallback(async () => {
     try {
       const data = await api.getDashboard();
       setSummary(data);
+      setApiError(null);
+    } catch (err) {
+      setApiError(err instanceof Error ? err.message : 'Unable to reach SURAKSHA API.');
     } finally {
       setLoading(false);
     }
@@ -153,6 +157,21 @@ export default function App() {
         </header>
 
         <main className="flex-1 p-6 lg:p-8 max-w-7xl w-full mx-auto">
+          {apiError && (
+            <div
+              role="alert"
+              className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-800 flex items-center justify-between gap-4"
+            >
+              <span>{apiError}</span>
+              <button
+                type="button"
+                onClick={() => void refreshDashboard()}
+                className="px-2.5 py-1 rounded border border-red-300 bg-white font-semibold text-red-800 hover:bg-red-100 cursor-pointer shrink-0"
+              >
+                Retry
+              </button>
+            </div>
+          )}
           {activePage === 'home' && (
             <ProtectionDashboard
               summary={summary}

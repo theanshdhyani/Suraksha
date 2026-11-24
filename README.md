@@ -6,14 +6,15 @@
 
 Built for **wHACKiest 2026** · Track: **Make MCP Matter**
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-surakshademo.netlify.app-0284c7?style=flat-square)](https://surakshademo.netlify.app/)
 [![CI](https://img.shields.io/badge/CI-Lint_%26_Build_Passing-16a34a?style=flat-square)](.github/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/Tests-15%2F15_Passing-16a34a?style=flat-square)](tests/)
+[![Tests](https://img.shields.io/badge/Tests-17%2F17_Passing-16a34a?style=flat-square)](tests/)
 [![Demo Mode](https://img.shields.io/badge/Demo_Mode-Zero_API_Keys_Required-2563eb?style=flat-square)](#-quick-start-demo-mode--zero-api-keys-required)
 [![MCP SDK](https://img.shields.io/badge/MCP-4_SDK_Servers-0f172a?style=flat-square)](#-mcp-server-breakdown-srcmcp)
 [![Policy](https://img.shields.io/badge/Cedar_Policy-Default--Deny_%2F_Forbid--Wins-dc2626?style=flat-square)](policies/suraksha.cedar)
 [![License](https://img.shields.io/badge/License-Apache_2.0-475569?style=flat-square)](LICENSE)
 
-[Overview](#-overview) · [Why MCP Matters](#-why-make-mcp-matter) · [Screenshots](#-screenshots) · [Architecture](#-system-architecture) · [Quick Start](#-quick-start-demo-mode--zero-api-keys-required) · [Live Mode Setup](#-switching-to-live-mode-when-hackathon-api-keys-are-provided)
+[**Live Demo**](https://surakshademo.netlify.app/) · [Overview](#-overview) · [Why MCP Matters](#-why-make-mcp-matter) · [Screenshots](#-screenshots) · [Architecture](#-system-architecture) · [Quick Start](#-quick-start-demo-mode--zero-api-keys-required) · [Live Mode Setup](#-switching-to-live-mode-when-hackathon-api-keys-are-provided) · [Hackathon Day & Roadmap](#-main-offline-hackathon-day--scope-of-improvement)
 
 </div>
 
@@ -35,8 +36,9 @@ Fraudsters isolate victims—especially elderly parents—during live phone and 
 | **6. Enforce Policy** | AgentCore Gateway + Cedar | Validates signature, TTL, `alert_id`, scope, and one-time nonce before permitting Tier 2 **`family_mcp`**. |
 | **7. Preserve Evidence** | Audit MCP + Evidence Pack | Appends every allow/deny event to a **SHA-256 hash-chained ledger** and exports JSON/HTML Evidence Packs for **manual submission** to **Chakshu**, **1930**, and **cybercrime.gov.in**. |
 
-> **Zero-Key Evaluation Ready:**  
-> No AWS or ElevenLabs API keys are needed to run, test, or evaluate SURAKSHA right now. Every security control—deterministic scoring, HMAC-SHA256 token issuance/replay protection, 4 `@modelcontextprotocol/sdk` servers, Cedar `forbid`-wins policy evaluation, and SHA-256 hash chaining—executes genuinely in **DEMO MODE**. When hackathon credentials are supplied, individual adapters switch independently from `MOCK` to `LIVE` via `.env`.
+> **Live Demo & Zero-Key Evaluation:**  
+> **Live Deployment:** [**https://surakshademo.netlify.app/**](https://surakshademo.netlify.app/) (configured via [`netlify.toml`](netlify.toml) and [`netlify/functions/api.ts`](netlify/functions/api.ts)).  
+> No AWS or ElevenLabs API keys are needed to run, test, or evaluate SURAKSHA. Every security control—deterministic scoring, HMAC-SHA256 token issuance/replay protection, 4 `@modelcontextprotocol/sdk` servers, Cedar `forbid`-wins policy evaluation, and SHA-256 hash chaining—executes genuinely in **DEMO MODE**. When hackathon credentials are supplied, individual adapters switch independently from `MOCK` to `LIVE` via `.env`.
 
 ---
 
@@ -180,10 +182,13 @@ All four MCP servers are implemented using `@modelcontextprotocol/sdk` (`McpServ
 - **Node.js** `>= 20` (tested on Node 22)
 - **npm** `>= 10`
 
-### 1. Install & Launch Locally
+### 1. Try the Hosted Demo or Launch Locally
+
+- **Hosted Live Demo:** [**https://surakshademo.netlify.app/**](https://surakshademo.netlify.app/)
+
 ```bash
 git clone <your-repo-url>
-cd <repo-folder>
+cd suraksha-mcp-guardian
 npm install
 npm run dev
 ```
@@ -191,17 +196,17 @@ Open **`http://localhost:3000`**.
 
 ### 2. Run Automated Tests, Type-Check & Production Build
 ```bash
-npm test          # Runs 15 deterministic unit, security, MCP, audit & E2E tests
-npm run lint      # Strict TypeScript check (tsc --noEmit)
-npm run build     # Vite production frontend bundle
-npm start         # Serve production build via Express on port 3000 (NODE_ENV=production)
+npm test                     # Runs 17 deterministic unit, security, MCP, serverless & E2E tests
+npm run lint                 # Strict TypeScript check (tsc --noEmit)
+npm run build                # Vite production frontend bundle
+NODE_ENV=production npm start # Serve production build via Express on port 3000
 ```
 
-All **15/15 automated tests** verify:
+All **17/17 automated tests** verify:
 - **Detection**: Normal baseline, single-keyword non-triggering, fake bank OTP, CBI/Police impersonation, Digital Arrest + isolation, AnyDesk remote access, Devanagari Hindi, 18s rolling-window expiration, and deduplication.
 - **Approval Security**: Explicit `"haan"` matching, ambiguous rejection, duplicate-approval idempotency, missing/invalid/tampered signatures, expired tokens, alert ID mismatches, unauthorized tool scopes, and single-use replay prevention.
 - **Cedar Policy & MCP**: Tier 1 allowed without token, Tier 2 blocked without token, LLM override explicitly forbidden, scammer reply blocked, and Tier 2 succeeds once with valid token.
-- **Audit Chain & E2E**: SHA-256 previous/event hash verification, historical tamper detection, `PB_DIGITAL_ARREST` playbook matching, and full end-to-end Evidence Pack generation.
+- **Audit Chain, Serverless & E2E**: SHA-256 previous/event hash verification, historical tamper detection, `PB_DIGITAL_ARREST` playbook matching, Express & Netlify Functions API routing, and full end-to-end Evidence Pack generation.
 
 ---
 
@@ -227,6 +232,24 @@ SURAKSHA isolates every external service behind clean TypeScript adapter interfa
 3. Optional per-service overrides (`MOCK` or `LIVE`) can be set via `SURAKSHA_*_MODE` env vars or toggled directly in **Integration Status**, followed by **Run Live Health Checks**.
 
 See [`infra/aws-deployment-architecture.md`](infra/aws-deployment-architecture.md) for AWS Lambda handlers (`src/lambda/`), IAM least-privilege policies, and Cognito/AgentCore Gateway setup notes.
+
+---
+
+## 🛠 Main Offline Hackathon Day & Scope of Improvement
+
+### What We Will Execute on Main Offline Hackathon Day
+When hackathon mentor/sponsor credentials and live demo hardware are available on-site, SURAKSHA switches seamlessly from `MOCK` to `LIVE` without changing core detection or policy code:
+
+- **Two-Phone Live Audio Demo:** Run ElevenLabs Scribe v2 real-time WebSocket transcription (`ELEVENLABS_API_KEY`) and ElevenLabs Consented Family Voice TTS (`ELEVENLABS_VOICE_ID`) across two physical devices (simulated scammer caller vs. parent speaker with echo suppression).
+- **Live AWS Escalation & Policy Enforcement:** Enable `AmazonBedrockProvider` (Hindi/Hinglish family guidance), `AwsAgentCoreGatewayProvider` + Cognito OAuth (`policies/suraksha.cedar`), and `AmazonSNSProvider` so saying `"haan"` dispatches a real SMS/push alert to the guardian's physical phone live on stage.
+- **Immutable Cloud Audit Storage:** Activate `AwsDynamoS3AuditProvider` and deploy `src/lambda/orchestratorHandler.ts` + `src/lambda/gatewayInterceptor.ts` behind AWS API Gateway so hash-chained events and Evidence Packs persist to DynamoDB and S3 Object Lock (`COMPLIANCE` mode).
+
+### Scope of Improvement (Future Roadmap)
+- **Carrier / VoIP Media Streams:** Integrate SIP/WebRTC audio streams (e.g., Exotel / Twilio Media Streams) with device-level Acoustic Echo Cancellation (AEC) for zero-friction protection on native cellular and WhatsApp calls.
+- **Pan-India Multilingual Coverage:** Expand `DeterministicRuleEngine` rules, consented family prompts, and affirmative consent matchers beyond Hindi, Hinglish, and English to Tamil, Telugu, Marathi, Bengali, Gujarati, and Kannada.
+- **Speaker Voiceprint Binding for `"haan"`:** Pair HMAC-SHA256 approval tokens with local parent speaker verification so a caller cannot spoof the parent's explicit approval over the call.
+- **Distributed Session & Token Store:** Back active call sessions and single-use nonce tracking with DynamoDB TTL tables for horizontal multi-instance serverless scaling, alongside a lightweight Android/iOS companion app.
+- **Live Cyber-Threat Feed Integration:** Connect `ConfigurableThreatIntelligenceProvider` to verified I4C / phishing domain feeds while preserving the strict non-fetching offline inspection invariant.
 
 ---
 
@@ -261,8 +284,12 @@ See [`infra/aws-deployment-architecture.md`](infra/aws-deployment-architecture.m
 │   ├── lambda/                        # Deployable AWS Lambda Orchestrator & Interceptor
 │   ├── services/                      # Orchestrator & isolated Scam Drill service
 │   └── components/                    # 7-page React Guardian Dashboard UI
-├── tests/                             # 15 automated unit, security & E2E tests
+├── netlify/
+│   └── functions/api.ts               # Serverless Express wrapper for Netlify /api/* routes
+├── netlify.toml                       # Netlify build, Cedar bundle & /api/* redirect config
+├── tests/                             # 17 automated unit, security, serverless & E2E tests
 ├── CONTRIBUTING.md                    # Architecture invariants & extension guide
 ├── LICENSE                            # Apache-2.0 License
-└── server.ts                          # Express + Vite full-stack server (port 3000)
+├── src/serverApp.ts                   # Decoupled Express API + MCP gateway factory
+└── server.ts                          # Full-stack Express + Vite entrypoint (port 3000)
 ```

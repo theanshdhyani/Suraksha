@@ -15,12 +15,16 @@ export function EvidenceCenter({ onNavigate }: EvidenceCenterProps) {
   const [selectedAlertId, setSelectedAlertId] = useState<string | null>(null);
 
   const loadEvidence = async () => {
-    const [evRes, auditRes] = await Promise.all([api.getEvidencePacks(), api.getAudit()]);
-    setPacks(evRes.evidence_packs);
-    setAuditEvents(auditRes.events);
-    setVerification(auditRes.verification);
-    if (evRes.evidence_packs.length > 0 && !selectedAlertId) {
-      setSelectedAlertId(evRes.evidence_packs[0].alert_id);
+    try {
+      const [evRes, auditRes] = await Promise.all([api.getEvidencePacks(), api.getAudit()]);
+      setPacks(evRes.evidence_packs);
+      setAuditEvents(auditRes.events);
+      setVerification(auditRes.verification);
+      if (evRes.evidence_packs.length > 0 && !selectedAlertId) {
+        setSelectedAlertId(evRes.evidence_packs[0].alert_id);
+      }
+    } catch {
+      // Preserves clean empty state if backend is unreachable
     }
   };
 
@@ -29,8 +33,12 @@ export function EvidenceCenter({ onNavigate }: EvidenceCenterProps) {
   }, []);
 
   const verifyNow = async () => {
-    const res = await api.verifyAudit();
-    setVerification(res);
+    try {
+      const res = await api.verifyAudit();
+      setVerification(res);
+    } catch {
+      // Ignore transient failure
+    }
   };
 
   const selected = packs.find((p) => p.alert_id === selectedAlertId) || packs[0] || null;

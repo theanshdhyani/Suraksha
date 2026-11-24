@@ -23,6 +23,8 @@ export function GuardianDashboard({ onNavigate }: GuardianDashboardProps) {
       if (alertRes.alerts.length > 0 && !selectedId) {
         setSelectedId(alertRes.alerts[0].alert_id);
       }
+    } catch {
+      // Errors surface via App banner or empty state
     } finally {
       setLoading(false);
     }
